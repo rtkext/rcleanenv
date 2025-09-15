@@ -1379,6 +1379,35 @@ func TestTimeLocation(t *testing.T) {
 	}
 }
 
+type StructSetter struct {
+	Value string
+}
+
+func (v *StructSetter) SetValue(s string) error {
+	v.Value = s
+	return nil
+}
+func TestStructSetter(t *testing.T) {
+	want := StructSetter{
+		Value: "bar",
+	}
+
+	var cfg struct {
+		Foo StructSetter `env:"FOO"`
+	}
+
+	os.Setenv("FOO", "bar")
+	defer os.Clearenv()
+
+	if err := ReadEnv(&cfg); err != nil {
+		t.Fatal("cannot read env:", err)
+	}
+
+	if !reflect.DeepEqual(cfg.Foo, want) {
+		t.Errorf("wrong data: got %v, want %v", cfg.Foo, want)
+	}
+}
+
 func TestSkipUnexportedField(t *testing.T) {
 	conf := struct {
 		Database struct {
